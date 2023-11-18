@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:7
+    container_name: redis_container
+    command: --port 5370
+    expose:
+      - 5370
+
+  celery:
+    container_name: celery_container
+    build: .
+    volumes:
+      - .:/app
+    command: celery -A notifications.module_celery:app worker -l info
+    depends_on:
+      - redis
+
+
+  django:
+    container_name: django_container
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - celery
+
